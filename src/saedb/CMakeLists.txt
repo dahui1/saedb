@@ -5,6 +5,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(io)
 add_subdirectory(test)
 add_subdirectory(indexing)
+add_subdirectory(rpc)
 
 file(GLOB SAE_SOURCES
     "*.hpp"

@@ -28,3 +28,6 @@ add_subdirectory (src/saedb)
 
 # add applications
 add_subdirectory (src/app)
+
+# add the demo server
+add_subdirectory (src/demoserver)
