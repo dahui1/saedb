@@ -7,6 +7,7 @@ file(GLOB INDEXING_SOURCES
     "indexing.hpp"
     "indexing.cpp"
     "query.hpp"
+    "query.cpp"
     "search.hpp"
     )
 

@@ -7,7 +7,7 @@
 namespace indexing {
 
 struct SearchResult : public std::vector<QueryItem> {
-
+	int total_count = 0;
 };
 
 struct Searcher {
@@ -16,9 +16,11 @@ struct Searcher {
 	SearchResult search(const std::string& query) {
 		SearchResult result;
 		auto q = buildQuery(query, index);
-		QueryItem item;
-		while (q->next(item)) {
-			result.push_back(item);
+		if (q) {
+			QueryItem item;
+			while (q->next(item)) {
+				result.push_back(item);
+			}
 		}
 		return result;
 	}

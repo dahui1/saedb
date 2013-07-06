@@ -13,7 +13,6 @@ using namespace indexing;
 Index Index::build(DocumentCollection docs) {
 	Index index;
 	for (auto& doc : docs) {
-		cout << doc.second.id << endl;
 		for (auto& field : doc.second) {
 			string& value = field.value;
 			unique_ptr<TokenStream> stream(ArnetAnalyzer::tokenStream(value));
@@ -24,7 +23,6 @@ Index Index::build(DocumentCollection docs) {
 			while (stream->next(token)) {
 				string term = token.getTermText();
 				int term_id = index.word_map.id(term);
-				cout << term << endl;
 				word_position[term_id].push_back(position++);
 			}
 
@@ -46,5 +44,5 @@ Index Index::build(DocumentCollection docs) {
 }
 
 void Index::optimize() {
-	// current nothing to do.
+	// currently nothing to do.
 }
