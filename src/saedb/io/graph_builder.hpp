@@ -4,6 +4,11 @@
 #include <map>
 #include <vector>
 #include <utility>
+#include <sstream>
+#include <cstring>
+#include <string>
+
+#include "../serialization/serialization_includes.hpp"
 
 #include "type_info.hpp"
 
@@ -22,38 +27,97 @@ namespace io {
         GraphStorageTypeCount
     };
 
-    template<class edge_data_t>
     struct edge_with_data {
         vid_t source;
         vid_t target;
-        edge_data_t data;
+        eid_t global_id;
+        eid_t local_id;
+        std::string data;
+        uint32_t type_name;
+        edge_with_data(vid_t source, vid_t target, eid_t global_id, eid_t local_id, std::string data, uint32_t type_name) :
+            source(source), target(target), global_id(global_id), local_id(local_id), data(data), type_name(type_name) {}
+    };
+
+    struct vertex_with_data {
+        vid_t global_id;
+        vid_t local_id;
+        uint32_t type_name;
+        std::string data;
+        vertex_with_data(vid_t global_id, vid_t local_id, uint32_t type_name, std::string data) :
+            global_id(global_id), local_id(local_id), type_name(type_name), data(data) {
+        }
+    };
+
+    struct data_type {
+        uint32_t count;
+        std::string type_name;
+        data_type(std::string type_name): type_name(type_name) {
+            count = 0;
+        }
     };
 
     struct GraphWriter {
-        virtual void AppendVertex(void* data) = 0;
-        virtual void AppendEdge(vid_t source, vid_t target, void* data) = 0;
-        virtual void AppendDataType(DataTypeAccessor* data) = 0;
+        virtual void AppendVertex(vid_t, vid_t, uint32_t, std::string) = 0;
+        virtual void AppendEdge(vid_t, vid_t, eid_t, eid_t, std::string, uint32_t) = 0;
+        virtual void AppendVertexDataType(std::string, uint32_t count) = 0;
+        virtual void AppendEdgeDataType(std::string, uint32_t count) = 0;
         virtual void Close() = 0;
         virtual ~GraphWriter(){}
     };
 
-    GraphWriter* CreateMemoryMappedGraphWriter(const char * prefix, vid_t n, eid_t m, uint32_t vdata_size, uint32_t edata_size, uint32_t type_count, uint32_t type_total_size);
+    GraphWriter* CreateMemoryMappedGraphWriter(const char*, vid_t, eid_t, uint32_t, uint32_t, uint32_t*, uint32_t*);
 
-    template<typename vkey_t, class vertex_data_t, class edge_data_t>
+    template<typename vkey_t>
     struct GraphBuilder
     {
-    public:
-
-        virtual void AddVertex(vkey_t key, vertex_data_t data) {
-            auto id = map(key);
-            vertices[id] = data;
+        GraphBuilder() {
+            AddVertexDataType("DefaultVertexType");
+            AddEdgeDataType("DefaultEdgeType");
         }
 
-        virtual void AddEdge(vkey_t source, vkey_t target, edge_data_t data) {
+        template <typename T>
+        void AddVertex(vkey_t key, T data, const char* data_type_name = "DefaultVertexType") {
+            int data_type_rank = -1;
+            for (int i=0, size = vertex_data_types.size(); i<size; i++) {
+                if (vertex_data_types[i].type_name == std::string(data_type_name)) {
+                    data_type_rank = i;
+                    break;
+                }
+            }
+            if (data_type_rank == -1) {
+                std::cout << "ERROR: type " << data_type_name << " is undefined." << std::endl;
+                return;
+            }
+            auto id = map(key);
+            auto local_id = vertex_data_types[data_type_rank].count ++;
+
+            std::string code = sae::serialization::convert_to_string(data);
+
+            vertices[id] = vertex_with_data(id, local_id, data_type_rank, code);
+        }
+
+        template <typename T>
+        void AddEdge(vkey_t source, vkey_t target, T data, const char* data_type_name = "DefaultEdgeType") {
+            int data_type_rank = -1;
+            for (int i=0, size = edge_data_types.size(); i<size; i++) {
+                if (edge_data_types[i].type_name == std::string(data_type_name)) {
+                    data_type_rank = i;
+                    break;
+                }
+            }
+            if (data_type_rank == -1) {
+                std::cout << "ERROR: type " << data_type_name << " is undefined." << std::endl;
+                return;
+            }
             auto sid = map(source);
             auto tid = map(target);
-            edge_with_data<edge_data_t> e {sid, tid, data};
-            edges.push_back(e);
+            
+            eid_t id = edges.size();
+            auto local_id = edge_data_types[data_type_rank].count ++;
+            
+            std::string code = sae::serialization::convert_to_string(data);
+
+            edges.push_back(edge_with_data(sid, tid, id, local_id, code, data_type_rank));
         }
 
         virtual vid_t VertexCount() {
@@ -64,57 +128,72 @@ namespace io {
             return edges.size();
         }
 
-        uint32_t TypeTotalSize() {
-            uint32_t result = 0;
-            for (auto p : data_types) {
-                result += p->Size();
-            }
-            return result;
-        }
-
         virtual bool Save(const char * prefix, GraphStorageType type = MemoryMappedGraph) {
             if (type == MemoryMappedGraph) {
-                GraphWriter* writer = CreateMemoryMappedGraphWriter(prefix, vertices.size(), edges.size(), sizeof(vertex_data_t), sizeof(edge_data_t), data_types.size(), TypeTotalSize());
+                uint32_t * vertex_type_count = new uint32_t[vertex_data_types.size()];
+                for (int i=0, size = vertex_data_types.size(); i<size; i++) {
+                    vertex_type_count[i] = vertex_data_types[i].count;
+                    if (vertex_type_count[i] == 0) vertex_type_count[i] = 1;
+                }
+
+                uint32_t * edge_type_count = new uint32_t[edge_data_types.size()];
+                for (int i=0, size = edge_data_types.size(); i<size; i++) {
+                    edge_type_count[i] = edge_data_types[i].count;
+                    if (edge_type_count[i] == 0) edge_type_count[i] = 1;
+                }
+
+                GraphWriter* writer = CreateMemoryMappedGraphWriter(prefix, vertices.size(), edges.size(), vertex_data_types.size(), edge_data_types.size(), vertex_type_count, edge_type_count);
+
                 if (!writer) return false;
+                for (auto data_type: vertex_data_types) {
+                    writer->AppendVertexDataType(data_type.type_name, data_type.count);
+                }
+                for (auto data_type: edge_data_types) {
+                    writer->AppendEdgeDataType(data_type.type_name, data_type.count);
+                }
                 for (auto& v : vertices) {
-                    writer->AppendVertex(&v);
+                    writer->AppendVertex(v.global_id, v.local_id, v.type_name, v.data);
                 }
                 for (auto& e: edges) {
-                    writer->AppendEdge(e.source, e.target, &e.data);
-                }
-                for (auto dtp : data_types) {
-                    writer->AppendDataType(dtp);
+                    writer->AppendEdge(e.source, e.target, e.global_id, e.local_id, e.data, e.type_name);
                 }
                 writer->Close();
+
                 delete writer;
+                delete [] vertex_type_count;
+                delete [] edge_type_count;
             }
         }
 
-        virtual DataTypeAccessor* CreateType(const char* tn) {
-            return DataTypeAccessorFactory(tn);
+        virtual void AddVertexDataType(const char* type_name) {
+            vertex_data_types.push_back(data_type(std::string(type_name)));
         }
 
-        virtual void SaveDataType (DataTypeAccessor* dt) {
-            data_types.push_back(dt);
+        virtual void AddEdgeDataType(const char* type_name) {
+            edge_data_types.push_back(data_type(std::string(type_name)));
         }
 
         // no destructor?
     private:
-        std::map<vkey_t, uint64_t> vid_map;
-        std::vector<vertex_data_t> vertices;
-        std::vector<edge_with_data<edge_data_t>> edges;
-        std::vector<DataTypeAccessor*> data_types;
+        std::vector<vertex_with_data> vertices;
+        std::vector<edge_with_data> edges;
+
+        std::vector<data_type> vertex_data_types;
+        std::vector<data_type> edge_data_types;
+
+        std::map<vkey_t, vid_t> vid_map;
 
         vid_t map(vkey_t key) {
             vid_t result;
             auto it = vid_map.find(key);
             if (it == vid_map.end()) {
                 result = vertices.size();
-                vertices.resize(result + 1);
+                vertices.push_back(vertex_with_data(0, 0, 0, std::string("")));
                 vid_map.insert(make_pair(key, result));
             } else {
                 result = it->second;
             }
+
             return result;
         }
     };

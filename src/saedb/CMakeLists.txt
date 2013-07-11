@@ -6,6 +6,7 @@ add_subdirectory(io)
 add_subdirectory(test)
 add_subdirectory(indexing)
 add_subdirectory(rpc)
+add_subdirectory(serialization)
 
 file(GLOB SAE_SOURCES
     "*.hpp"
