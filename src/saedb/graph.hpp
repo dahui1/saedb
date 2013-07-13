@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <map>
 #include <set>
 #include <vector>
@@ -10,21 +11,21 @@
 #include "io/mgraph.hpp"
 
 #include "graph_basic_types.hpp"
+
+#include "serialization/serialization_includes.hpp"
+
+using namespace sae::serialization;
+
 /*
  * Wrapper for memory mapped graph.
  * */
 namespace saedb
 {
-    template<typename vertex_data_t,
-             typename edge_data_t>
-    class sae_graph
-    {
+    class sae_graph{
     public:
-        typedef vertex_data_t                                   vertex_data_type;
-        typedef edge_data_t                                     edge_data_type;
-        typedef saedb::sae_graph<vertex_data_t, edge_data_t>    graph_type;
-        typedef saedb::vertex_id_type                           vertex_id_type;
-        typedef saedb::edge_id_type                             edge_id_type;
+        typedef saedb::sae_graph           graph_type;
+        typedef saedb::vertex_id_type      vertex_id_type;
+        typedef saedb::edge_id_type        edge_id_type;
 
         struct vertex_type;
         typedef bool edge_list_type;
@@ -32,6 +33,8 @@ namespace saedb
 
     private:
         sae::io::MappedGraph* graph;
+        std::vector<vertex_type> vertices_;
+        int *v_valid_;
 
     public:
 
@@ -42,6 +45,7 @@ namespace saedb
         ~sae_graph() {
             graph->Close();
             delete graph;
+            delete [] v_valid_;
         }
 
         void finalize() { /* nop */}
@@ -61,6 +65,10 @@ namespace saedb
         void load_mgraph(const std::string& graph_name) {
             std::cout << graph_name << std::endl;
             graph = sae::io::MappedGraph::Open(graph_name.c_str());
+
+            vertices_.resize(num_vertices());
+            v_valid_ = new int[num_vertices()];
+            memset(v_valid_, 0, num_vertices() * sizeof(int));
         }
 
         void load_format(const std::string& filename, const std::string& fmt = "mgraph") {
@@ -113,19 +121,29 @@ namespace saedb
         struct vertex_type {
             sae::io::VertexIteratorPtr vi;
 
-            vertex_type(sae::io::VertexIteratorPtr&& vi) : vi(std::move(vi)) { }
+            vertex_type(sae::io::VertexIteratorPtr&& vi) : vi(std::move(vi)) { 
+            }
+
+            vertex_type() { /*for saving into vector*/ }
 
             bool operator==(vertex_type& v) const {
-                return vi->GlobalId() == v->vi->GlobalId();
+                return vi->GlobalId() == v.vi->GlobalId();
             }
 
-            // return pointer to data
-            const void* data() const {
-                //return vi->Data(); TODO 
+            template<typename T>
+            T parse() {
+                T ret = sae::serialization::convert_from_string<T>(vi->Data());
+                return ret;
             }
 
-            void* data() {
-                //return vi->Data(); TODO
+            template<typename T>
+            void update(T d) {
+                vi->Data() = sae::serialization::convert_to_string<T>(d);
+            }
+
+            /* return the data rank of this vertex */
+            std::string data_type_name() {
+                return vi->Typename();
             }
 
             size_t num_in_edges() const {
@@ -156,9 +174,12 @@ namespace saedb
         class edge_type {
         private:
             sae::io::EdgeIteratorPtr ei;
+            
         public:
 
             edge_type(sae::io::EdgeIteratorPtr&& ei) : ei(std::move(ei)) { }
+
+            edge_type() { /*for saving into vector*/ }
 
             vertex_type source() const {
                 return vertex_type(std::move(ei->Source()));
@@ -168,19 +189,33 @@ namespace saedb
                 return vertex_type(std::move(ei->Target()));
             }
 
-            const void* data() const {
-                return ei->Data();
+            template<typename T>
+            T parse() {
+                T ret = sae::serialization::convert_from_string<T>(ei->Data());
+                return ret;
             }
 
-            void* data() {
-                return ei->Data();
+            template<typename T>
+            void update(T d) {
+                ei->Data() = sae::serialization::convert_to_string<T>(d);
             }
+
+            /* return the data rank of this vertex */
+            std::string data_type_name() {
+                return ei->Typename();
+            }
+
         };
 
-        vertex_type vertex(vertex_id_type vid){
-            sae::io::VertexIteratorPtr v = graph->Vertices();
-            v->MoveTo(vid);
-            return vertex_type(std::move(v));
+        vertex_type& vertex(vertex_id_type vid){
+            if (!v_valid_[vid]) {
+                sae::io::VertexIteratorPtr v = graph->Vertices();
+                v->MoveTo(vid);
+                std::string s = v->Data();
+                vertices_[vid] = vertex_type(std::move(v));
+                v_valid_[vid] = 1;
+            }
+            return vertices_[vid];
         }
     };
 }
