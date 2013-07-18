@@ -11,6 +11,10 @@ struct QueryItem {
     double score;
 };
 
+inline bool operator< (const QueryItem& left, const QueryItem& right) {
+    return left.score > right.score;
+}
+
 struct Query {
     virtual ~Query() = default;
     virtual bool next(QueryItem&) = 0;

@@ -15,6 +15,8 @@ add_library(indexing ${INDEXING_SOURCES})
 target_link_libraries(indexing ArnetAnalyzer)
 
 add_executable(indexing_test search_test.cpp)
-target_link_libraries(indexing_test indexing)
+target_link_libraries(indexing_test indexing sae_test)
+
+add_test(NAME indexing_test COMMAND indexing_test)
 
 add_subdirectory(analyzer)
