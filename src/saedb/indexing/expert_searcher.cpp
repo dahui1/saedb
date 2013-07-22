@@ -81,12 +81,11 @@ SearchResult ExpertSearcher::search(string query, const std::unique_ptr<MappedGr
 		if(pub)
 		{
 			auto edgeIt = vi->InEdges();
-			int i = 0;
-			while (i++ < vi->InEdgeCount()) {
-				if (edgeIt->TargetId() >> 32 < 0) {
+			while (edgeIt->Alive()) {
+				if (edgeIt->Typename() == "Author") {
 					authorIDs.push_back(edgeIt->TargetId());
 				}
-				edgeIt++;
+				edgeIt->Next();
 			}
 			for (vid_t naid : authorIDs )
 			{
