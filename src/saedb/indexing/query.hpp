@@ -4,16 +4,14 @@
 #include <vector>
 #include "indexing.hpp"
 
+using namespace std;
+
 namespace indexing {
 
 struct QueryItem {
     int docId;
     double score;
 };
-
-inline bool operator< (const QueryItem& left, const QueryItem& right) {
-    return left.score > right.score;
-}
 
 struct Query {
     virtual ~Query() = default;
@@ -42,12 +40,12 @@ private:
 };
 
 struct TermQuery : public Query {
-
-    TermQuery(const Index& index, Term &term);
+    TermQuery(const Index& index, Term &term, int occur);
     virtual bool next(QueryItem& item);
 
 private:
     PostingList::iterator it, end;
+    int occurence;
 };
 
 

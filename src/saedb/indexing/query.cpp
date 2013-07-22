@@ -76,20 +76,23 @@ OrQuery::OrQuery(std::unique_ptr<Query> leftOp, std::unique_ptr<Query> rightOp, 
 
 // TermQuery
 
-TermQuery::TermQuery(const Index& index, Term &term) {
-    if (index.find(term) != index.end())
-    {
-        it = index.find(term)->second.begin();
-        end = index.find(term)->second.end();
-    }
-    else
-        it = end = index.begin()->second.end();
+TermQuery::TermQuery(const Index& index, Term &term, int occur) {
+	if (index.find(term) != index.end())
+	{
+		it = index.find(term)->second.begin();
+		end = index.find(term)->second.end();
+	}
+	else
+		it = end = index.begin()->second.end();
+	occurence = occur;
 }
 
 bool TermQuery::next(QueryItem& item) {
     if (it == end) return false;
     item.docId = it->docId;
-    item.score = it->score;
+    item.score = it->score * log10 ((double)((3 - occurence + 0.5) / (0.5 * (occurence + 0.5))));
+    if (item.score < 0)
+    	item.score = 0.01;
     it++;
     return true;
 }
@@ -141,12 +144,13 @@ std::unique_ptr<Query> StandardQueryAnalyzer::MergeWithAndQuery(std::unique_ptr<
 
 std::unique_ptr<Query> StandardQueryAnalyzer::TryCreateTermQuery(const std::string& term_string, const Index& index)
 {
-    int term_id = index.word_map.find_id(term_string);
-    if (term_id == -1) return NULL;
-    int field_id = 0;
-    Term term{term_id, field_id};
-    std::unique_ptr<Query> p (new TermQuery(index, term));
-    return p;
+	int term_id = index.word_map.find_id(term_string);
+	if (term_id == -1) return NULL;
+	int field_id = 0;
+	Term term{term_id, field_id};
+	int occurence = index.find(term)->second.size();
+	std::unique_ptr<Query> p (new TermQuery(index, term, occurence));
+	return p;
 }
 
 std::vector<std::unique_ptr<Query>> buildTermQueries(const std::string& query, const Index& index, StandardQueryAnalyzer& analyzer) {

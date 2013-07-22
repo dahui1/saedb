@@ -6,7 +6,9 @@
 #include <set>
 #include <unordered_map>
 
+#define PUB_TOPIC_UNINIT -2
 
+using namespace std;
 
 namespace indexing {
 
@@ -22,14 +24,12 @@ namespace indexing {
 
 namespace std {
     template <>
-    struct hash<indexing::Term> {
-	size_t operator()(const indexing::Term x) const {
-	    return std::hash<int>()(x.word) ^ std::hash<int>()(x.field);
-	}
+	struct hash<indexing::Term> {
+		size_t operator()(const indexing::Term x) const {
+            return std::hash<int>()(x.word) ^ std::hash<int>()(x.field);
+        }
     };
 }
-
-
 
 namespace indexing {
 
@@ -58,27 +58,12 @@ struct Document : public std::vector<Field> {
 };
 
 struct DocumentCollection : public std::map<int, Document> {
+    Document* getDocumentByIndex(int index);
 };
 
 struct WordMap : public std::unordered_map<std::string, int> {
-    int id(const std::string word) {
-        auto wi = find(word);
-        if (wi != end()) {
-            return wi->second;
-        } else {
-            int i = (int) size();
-            insert(make_pair(word, i));
-            return i;
-        }
-    }
-    
-    int find_id(const std::string word) const{
-        auto wi = find(word);
-        if (wi != end()) {
-            return wi->second;
-        }
-        else return -1;
-    }
+    int id(const std::string word);
+    int find_id(const std::string word) const;
 };
 
 struct Index : public std::unordered_map<Term, PostingList> {

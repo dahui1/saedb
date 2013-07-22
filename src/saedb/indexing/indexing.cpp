@@ -5,14 +5,54 @@
 #define BM25_K 2.0
 #define BM25_B 0.75
 
-#define avgLen 30
-
 using namespace std;
 using namespace indexing;
 
+int WordMap::id(const std::string word) {
+    auto wi = find(word);
+    if (wi != end()) {
+        return wi->second;
+    } else {
+        int i = (int) size();
+        insert(make_pair(word, i));
+        return i;
+    }
+}
+
+int WordMap::find_id(const std::string word) const {
+    auto wi = find(word);
+    if (wi != end()) {
+        return wi->second;
+    }
+    else return -1;
+}
+
+Document* DocumentCollection::getDocumentByIndex(int index)
+{
+	if (index<0 || index >= this->size())
+	{
+		return NULL;
+	}
+	return &this->at(index);
+}
+
 Index Index::build(DocumentCollection docs) {
 	Index index;
+	int count = docs.size();
+	double avgLen = 0;
 	for (auto& doc : docs) {
+		for (auto& field : doc.second) {
+			string value = field.value;
+			for (unsigned i = 0; i < value.length(); i++)
+				if (value[i] == ' ' && i != value.length()-1)
+					avgLen++;
+			avgLen++;
+		}
+	}
+	avgLen = avgLen / (double)count;
+
+	for (auto& doc : docs) {
+		cout << doc.second.id << endl;
 		for (auto& field : doc.second) {
 			string& value = field.value;
 			unique_ptr<TokenStream> stream(ArnetAnalyzer::tokenStream(value));
@@ -23,6 +63,7 @@ Index Index::build(DocumentCollection docs) {
 			while (stream->next(token)) {
 				string term = token.getTermText();
 				int term_id = index.word_map.id(term);
+				cout << term << endl;
 				word_position[term_id].push_back(position++);
 			}
 
@@ -44,5 +85,6 @@ Index Index::build(DocumentCollection docs) {
 }
 
 void Index::optimize() {
-	// currently nothing to do.
+	// current nothing to do.
 }
+
