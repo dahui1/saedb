@@ -27,15 +27,6 @@ int WordMap::find_id(const std::string word) const {
     else return -1;
 }
 
-Document* DocumentCollection::getDocumentByIndex(int index)
-{
-	if (index<0 || index >= this->size())
-	{
-		return NULL;
-	}
-	return &this->at(index);
-}
-
 Index Index::build(DocumentCollection docs) {
 	Index index;
 	int count = docs.size();
@@ -74,9 +65,8 @@ Index Index::build(DocumentCollection docs) {
 				auto& positions = wp.second;
 				int freq = static_cast<int>(positions.size());
 				double score = (freq * (BM25_K + 1)) / (freq + BM25_K * (1 - BM25_B + BM25_B * totalTokens / avgLen));
-				Term term{word_id, field_id};
 				// insert a new posting item
-				index[term].insert(PostingItem{doc.second.id, positions, score});
+				index[word_id].insert(PostingItem{doc.second.id, positions, score});
 			}
 		}
 	}

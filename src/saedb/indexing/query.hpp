@@ -19,7 +19,7 @@ struct Query {
 };
 
 struct AndQuery : public Query {
-    AndQuery(std::unique_ptr<Query> leftOp, std::unique_ptr<Query> rightOp, double leftWeight = 1, double rightWeight = 1);
+    AndQuery(std::unique_ptr<Query> leftOp, std::unique_ptr<Query> rightOp, double leftWeight = 1.0, double rightWeight = 1.0);
     virtual bool next(QueryItem& item);
 
     std::unique_ptr<Query> left, right;
@@ -28,7 +28,7 @@ struct AndQuery : public Query {
 
 struct OrQuery : public Query {
 
-    OrQuery(std::unique_ptr<Query> leftOp, std::unique_ptr<Query> rightOp, double leftWeight = 1, double rightWeight = 1);
+    OrQuery(std::unique_ptr<Query> leftOp, std::unique_ptr<Query> rightOp, double leftWeight = 1.0, double rightWeight = 1.0);
     virtual bool next(QueryItem& item);
 
     std::unique_ptr<Query> left, right;
@@ -40,7 +40,7 @@ private:
 };
 
 struct TermQuery : public Query {
-    TermQuery(const Index& index, Term &term, int occur);
+    TermQuery(const Index& index, int &term, int occur);
     virtual bool next(QueryItem& item);
 
 private:

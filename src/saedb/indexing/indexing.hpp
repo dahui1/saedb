@@ -34,7 +34,7 @@ namespace std {
 namespace indexing {
 
 struct PostingItem {
-    int docId;
+    long unsigned int docId;
     std::vector<short> positions;
     double score;
 
@@ -58,7 +58,6 @@ struct Document : public std::vector<Field> {
 };
 
 struct DocumentCollection : public std::map<int, Document> {
-    Document* getDocumentByIndex(int index);
 };
 
 struct WordMap : public std::unordered_map<std::string, int> {
@@ -66,8 +65,9 @@ struct WordMap : public std::unordered_map<std::string, int> {
     int find_id(const std::string word) const;
 };
 
-struct Index : public std::unordered_map<Term, PostingList> {
+struct Index : public std::unordered_map<int, PostingList> {
     WordMap word_map;
+    WordMap map;
     
 	// optimize the index
     void optimize();
