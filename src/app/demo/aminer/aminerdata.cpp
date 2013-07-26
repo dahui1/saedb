@@ -67,6 +67,7 @@ AMinerData::AMinerData(char const * prefix) {
     cerr << "index built!" << endl;
 }
 
+/*
 int main() {
     AMinerData aminer("aminer");
     auto result = aminer.searchPublications("data mining");
@@ -84,3 +85,4 @@ int main() {
         cout << "name: " << p.names[0] << endl;
     }
 }
+*/
