@@ -18,8 +18,4 @@ file (GLOB INDEXING_SOURCES
 add_library(indexing ${INDEXING_SOURCES})
 target_link_libraries(indexing ArnetAnalyzer saedb)
 
-file (GLOB aminerimporter_SOURCES "aminerimporter.cpp")
-add_executable(aminerimporter ${aminerimporter_SOURCES})
-target_link_libraries(aminerimporter mgraph)
-
 add_subdirectory(analyzer)
