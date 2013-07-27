@@ -3,8 +3,8 @@
 #include <thread>
 #include <unordered_map>
 #include <glog/logging.h>
-#include <zmq.hpp>
 
+#include "zmq.hpp"
 #include "RpcServer.hpp"
 #include "rpc.pb.h"
 
