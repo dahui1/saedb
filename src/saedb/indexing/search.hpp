@@ -16,7 +16,7 @@ struct SearchResult : public std::vector<QueryItem> {
 struct Searcher {
 	Searcher(const Index& index) : index(index) {
 	}
-	SearchResult search(const std::string& query, const std::unique_ptr<MappedGraph>& g) {
+	SearchResult search(const std::string& query) {
 		SearchResult result;
 		auto q = buildQuery(query, index);
 		QueryItem item;
