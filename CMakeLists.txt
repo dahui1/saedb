@@ -20,6 +20,8 @@ endif()
 # add external dependencies
 add_all_subdirectories ("${SAE_SOURCE_DIR}/external")
 
+# add includes for google-glog
+include_directories ("${google-glog_SOURCE_DIR}/src")
 # add includes for gflags
 include_directories ("${gflags_BINARY_DIR}/include")
 
