@@ -7,29 +7,25 @@
 #include <unordered_map>
 
 
-
 namespace indexing {
-
-	struct Term {
-		int word;
-		int field;
-		bool operator==(const indexing::Term x) const
-		{
-			return (word == x.word) && (field == x.field);
-		}
-	};
+    struct Term {
+        int word;
+        int field;
+        bool operator==(const indexing::Term x) const
+        {
+            return (word == x.word) && (field == x.field);
+        }
+    };
 }
 
 namespace std {
     template <>
     struct hash<indexing::Term> {
-	size_t operator()(const indexing::Term x) const {
-	    return std::hash<int>()(x.word) ^ std::hash<int>()(x.field);
-	}
+        size_t operator()(const indexing::Term x) const {
+            return std::hash<int>()(x.word) ^ std::hash<int>()(x.field);
+        }
     };
 }
-
-
 
 namespace indexing {
 
@@ -38,10 +34,10 @@ struct PostingItem {
     std::vector<short> positions;
     double score;
 
-	bool operator<(const indexing::PostingItem x) const
-	{
-		return docId < x.docId;
-	}
+    bool operator<(const indexing::PostingItem& x) const
+    {
+        return docId < x.docId;
+    }
 
 };
 
@@ -61,34 +57,17 @@ struct DocumentCollection : public std::map<int, Document> {
 };
 
 struct WordMap : public std::unordered_map<std::string, int> {
-    int id(const std::string word) {
-        auto wi = find(word);
-        if (wi != end()) {
-            return wi->second;
-        } else {
-            int i = (int) size();
-            insert(make_pair(word, i));
-            return i;
-        }
-    }
-    
-    int find_id(const std::string word) const{
-        auto wi = find(word);
-        if (wi != end()) {
-            return wi->second;
-        }
-        else return -1;
-    }
+    int id(const std::string word);
+    int find_id(const std::string word) const;
 };
 
 struct Index : public std::unordered_map<Term, PostingList> {
     WordMap word_map;
-    
-	// optimize the index
+
+    // optimize the index
     void optimize();
 
     static Index build(DocumentCollection);
 };
-
 
 } // namespace indexing

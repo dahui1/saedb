@@ -22,8 +22,8 @@ public:
 
 	//string input;
 	CharTokenizer(string in)
-		:	ioBuffer(NULL),
-			Tokenizer(in)
+		:	Tokenizer(in),
+		 	ioBuffer(NULL)
 	{
 		init();
 	}
