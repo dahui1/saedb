@@ -149,7 +149,7 @@ std::unique_ptr<Query> StandardQueryAnalyzer::MergeWithAndQuery(std::unique_ptr<
 
 std::unique_ptr<Query> StandardQueryAnalyzer::TryCreateTermQuery(const std::string& term_string, const Index& index)
 {
-    int term_id = index.word_map.find_id(term_string);
+    int term_id = index.word_map.findId(term_string);
     if (term_id == -1) return NULL;
     int occurence = index.find(Term{term_id, 0})->second.size();
     int field_id = 0;

@@ -16,12 +16,35 @@ int WordMap::id(const std::string word) {
     }
 }
 
-int WordMap::find_id(const std::string word) const {
+int WordMap::findId(const std::string word) const {
     auto wi = find(word);
     if (wi != end()) {
         return wi->second;
     }
     else return -1;
+}
+
+void Index::addSingle(int doc, int field, const string& value, double avg_len) {
+    unique_ptr<TokenStream> stream(ArnetAnalyzer::tokenStream(value));
+    unordered_map<int, vector<short>> word_position;
+    int position = 0;
+
+    Token token;
+    while (stream->next(token)) {
+        string term = token.getTermText();
+        int term_id = word_map.id(term);
+        word_position[term_id].push_back(position++);
+    }
+
+    int totalTokens = position;
+    for (auto& wp : word_position) {
+        int word = wp.first;
+        auto& positions = wp.second;
+        // insert a new posting item
+        Term term{word, field};
+        double score = bm25(positions.size(), totalTokens, avg_len);
+        (*this)[term].insert(PostingItem{doc, positions, score});
+    }
 }
 
 Index Index::build(DocumentCollection docs) {
@@ -41,31 +64,10 @@ Index Index::build(DocumentCollection docs) {
 
     for (auto& doc : docs) {
         for (auto& field : doc.second) {
-            string& value = field.value;
-            unique_ptr<TokenStream> stream(ArnetAnalyzer::tokenStream(value));
-            unordered_map<int, vector<short int> > word_position;
-            int position = 0;
-
-            Token token;
-            while (stream->next(token)) {
-                string term = token.getTermText();
-                int term_id = index.word_map.id(term);
-                word_position[term_id].push_back(position++);
-            }
-
-            int totalTokens = position;
-            for (auto& wp : word_position) {
-                int word_id = wp.first;
-                int field_id = 0; // TODO
-                auto& positions = wp.second;
-                int freq = static_cast<int>(positions.size());
-                double score = (freq * (BM25_K + 1)) / (freq + BM25_K * (1 - BM25_B + BM25_B * totalTokens / avgLen));
-                // insert a new posting item
-                Term term{word_id, field_id};
-                index[term].insert(PostingItem{doc.second.id, positions, score});
-            }
+            index.addSingle(doc.second.id, 0, field.value, avgLen);
         }
     }
+
     index.optimize();
     return std::move(index);
 }

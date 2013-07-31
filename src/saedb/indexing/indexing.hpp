@@ -65,16 +65,23 @@ struct DocumentCollection : public std::map<int, Document> {
 
 struct WordMap : public std::unordered_map<std::string, int> {
     int id(const std::string word);
-    int find_id(const std::string word) const;
+    int findId(const std::string word) const;
 };
 
 struct Index : public std::unordered_map<Term, PostingList> {
     WordMap word_map;
+
+    // add single field
+    void addSingle(int doc, int field, const std::string& value, double score);
 
     // optimize the index
     void optimize();
 
     static Index build(DocumentCollection);
 };
+
+inline double bm25(int freq, int total_tokens, double avg_len) {
+    return (freq * (BM25_K + 1)) / (freq + BM25_K * (1 - BM25_B + BM25_B * total_tokens / avg_len));
+}
 
 } // namespace indexing
