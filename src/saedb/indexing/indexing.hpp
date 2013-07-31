@@ -6,28 +6,35 @@
 #include <set>
 #include <unordered_map>
 
-
 namespace indexing {
-    struct Term {
-        int word;
-        int field;
-        bool operator==(const indexing::Term x) const
-        {
-            return (word == x.word) && (field == x.field);
-        }
-    };
+
+struct Term {
+    int word;
+    int field;
+
+    inline bool operator==(Term const &another) const
+    {
+        return (word == another.word) && (field == another.field);
+    }
+};
+
 }
 
 namespace std {
-    template <>
-    struct hash<indexing::Term> {
-        size_t operator()(const indexing::Term x) const {
-            return std::hash<int>()(x.word) ^ std::hash<int>()(x.field);
-        }
-    };
+
+template <>
+struct hash<indexing::Term> {
+    size_t operator()(const indexing::Term term) const {
+        return std::hash<int>()(term.word) ^ std::hash<int>()(term.field);
+    }
+};
+
 }
 
 namespace indexing {
+
+const float BM25_K = 2.0;
+const float BM25_B = 0.75;
 
 struct PostingItem {
     int docId;

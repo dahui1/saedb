@@ -2,9 +2,6 @@
 #include "analyzer.hpp"
 #include "indexing.hpp"
 
-#define BM25_K 2.0
-#define BM25_B 0.75
-
 using namespace std;
 using namespace indexing;
 
