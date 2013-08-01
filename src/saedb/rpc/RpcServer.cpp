@@ -42,6 +42,9 @@ namespace
     }
 }
 
+namespace sae {
+namespace rpc {
+
 struct RpcServerImpl : RpcServer
 {
     RpcServerImpl(int port, int threads) :
@@ -145,4 +148,8 @@ struct RpcServerImpl : RpcServer
 RpcServer* RpcServer::CreateServer(int port, int threads)
 {
     return new RpcServerImpl(port, threads);
+
 }
+
+} // namespace rpc
+} // namespace sae
