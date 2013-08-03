@@ -138,16 +138,16 @@ struct VertexIteratorImpl : public VertexIterator {
         return g.vertex_list[global_id].local_id;
     }
 
-    uint32_t DataTypeId() {
+    uint32_t TypeId() {
         return g.vertex_list[global_id].data_type;
     }
 
-    std::string Typename() {
-        return g.vertex_data_type_info[DataTypeId()].type_name;
+    std::string TypeName() {
+        return g.vertex_data_type_info[TypeId()].type_name;
     }
 
     std::string& Data() {
-        return g.vertex_data[DataTypeId()][LocalId()];
+        return g.vertex_data[TypeId()][LocalId()];
     }
 
     void Next() {
@@ -155,11 +155,11 @@ struct VertexIteratorImpl : public VertexIterator {
     }
 
     void NextOfType() {
-        if (LocalId() == g.vertex_data_type_info[DataTypeId()].count - 1) {
+        if (LocalId() == g.vertex_data_type_info[TypeId()].count - 1) {
             MoveTo(g.meta->vertices);
             return;
         }
-        MoveTo(g.vertex_type_list[DataTypeId()][LocalId() + 1]);
+        MoveTo(g.vertex_type_list[TypeId()][LocalId() + 1]);
     }
 
     void MoveTo(vid_t id) {
@@ -234,12 +234,12 @@ struct EdgeIteratorImpl : public EdgeIterator {
         return list[base + index].target_id;
     }
     
-    uint32_t DataTypeId() {
+    uint32_t TypeId() {
         return list[base + index].data_type;
     }
 
-    std::string Typename() {
-        return g.edge_data_type_info[DataTypeId()].type_name;
+    std::string TypeName() {
+        return g.edge_data_type_info[TypeId()].type_name;
     }
 
     VertexIteratorPtr Source() {
@@ -253,7 +253,7 @@ struct EdgeIteratorImpl : public EdgeIterator {
     }
 
     std::string& Data() {
-        return g.edge_data[DataTypeId()][LocalId()];
+        return g.edge_data[TypeId()][LocalId()];
     }
 
     void Next() {

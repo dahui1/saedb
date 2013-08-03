@@ -37,7 +37,8 @@ namespace sae {
             virtual void NextOfType() = 0;
             virtual void MoveTo(vid_t) = 0;
             virtual bool Alive() = 0;
-            virtual std::string Typename() = 0;
+            virtual std::string TypeName() = 0;
+            virtual uint32_t TypeId() = 0;
             virtual eid_t InEdgeCount() = 0;
             virtual eid_t OutEdgeCount() = 0;
             virtual EdgeIteratorPtr InEdges() = 0;
@@ -56,7 +57,8 @@ namespace sae {
             virtual std::string& Data() = 0;
             virtual void Next() = 0;
             virtual bool Alive() = 0;
-            virtual std::string Typename() = 0;
+            virtual std::string TypeName() = 0;
+            virtual uint32_t TypeId() = 0;
             virtual eid_t Count() = 0;
             virtual EdgeIteratorPtr Clone() = 0;
             EdgeIterator(){}
