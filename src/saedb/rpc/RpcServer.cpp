@@ -140,7 +140,7 @@ struct RpcServerImpl : RpcServer
         zmq::device(ZMQ_QUEUE, clients, workers);
     }
 
-    private:
+private:
     int port_, threads_;
     std::unordered_map<string, ServiceFunc> methods_;
 };

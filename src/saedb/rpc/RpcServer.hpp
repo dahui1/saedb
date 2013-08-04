@@ -9,14 +9,14 @@ using ServiceFunc = std::function<bool(const std::string&, std::string&)>;
 
 template<class T>
 struct ServiceBinder {
-    ServiceBinder(T service) : service(service) {
+    ServiceBinder(T& service) : service(service) {
     }
 
     // I cannot figure out the correct type for f.
     // Let the compiler do the work then.
     template<typename F>
     ServiceFunc operator()(F f) {
-        return bind(f, service, std::placeholders::_1, std::placeholders::_2);
+        return bind(f, std::ref(service), std::placeholders::_1, std::placeholders::_2);
     }
 
 private:
@@ -24,7 +24,7 @@ private:
 };
 
 template<class T>
-ServiceBinder<T> make_binder(T service) {
+ServiceBinder<T> make_binder(T& service) {
     return ServiceBinder<T>(service);
 }
 
