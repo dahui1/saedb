@@ -129,7 +129,7 @@ struct VertexIteratorImpl : public VertexIterator {
 
     VertexIteratorImpl(GraphData& g, vid_t global_id):
         g(g), global_id(global_id) {}
-    
+
     vid_t GlobalId() {
         return global_id;
     }
@@ -404,6 +404,24 @@ struct MappedGraphImpl : public MappedGraph {
         return mg;
     }
 
+    int VertexTypeIdOf(const char * type) {
+        for (int i = 0; i < g.meta->vertex_data_type_count; i++) {
+            if (g.vertex_data_type_info[i].type_name == type) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    int EdgeTypeIdOf(const char * type) {
+        for (int i = 0; i < g.meta->edge_data_type_count; i++) {
+            if (g.edge_data_type_info[i].type_name == type) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     vid_t VertexCount() {
         return g.meta->vertices;
     }
@@ -411,7 +429,7 @@ struct MappedGraphImpl : public MappedGraph {
     eid_t EdgeCount() {
         return g.meta->edges;
     }
-    
+
     uint32_t VertexTypeCount() {
         return g.meta->vertex_data_type_count;
     }

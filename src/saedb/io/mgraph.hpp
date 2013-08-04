@@ -73,6 +73,16 @@ namespace sae {
             static MappedGraph* Open(const char * prefix);
 
             /**
+             * Get the internal id of the vertex typename.
+             */
+            virtual int VertexTypeIdOf(const char* type) = 0;
+
+            /**
+             * Get the internal id of the edge typename.
+             */
+            virtual int EdgeTypeIdOf(const char* type) = 0;
+
+            /**
              * Count of vertices.
              */
             virtual vid_t VertexCount() = 0;
@@ -87,6 +97,9 @@ namespace sae {
              */
             virtual VertexIteratorPtr Vertices() = 0;
 
+            /**
+             * Obtain an iterator for vertices of that type.
+             */
             virtual VertexIteratorPtr VerticesOfType(const char*) = 0;
 
             /**
@@ -100,8 +113,8 @@ namespace sae {
             virtual EdgeIteratorPtr BackwardEdges() = 0;
 
             /*
-                Obtain an iterator for edges.
-            */
+             *  Obtain an iterator for edges.
+             */
             virtual EdgeIteratorPtr Edges() = 0;
 
             /**
