@@ -88,9 +88,20 @@ namespace sae {
             virtual vid_t VertexCount() = 0;
 
             /**
+             * Count of vertices of the specific type.
+             */
+            virtual eid_t VertexCountOfType(const char* type) = 0;
+
+            /**
              * Count of edges.
              */
             virtual eid_t EdgeCount() = 0;
+
+
+            /**
+             * Count of edges of the specific type.
+             */
+            virtual eid_t EdgeCountOfType(const char* type) = 0;
 
             /**
              * Obtain an iterator for vertices.

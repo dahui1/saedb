@@ -438,7 +438,7 @@ struct MappedGraphImpl : public MappedGraph {
         return g.meta->edge_data_type_count;
     }
 
-    vid_t VertexOfTypeCount(const char* type) {
+    vid_t VertexCountOfType(const char* type) {
         uint32_t vertex_data_type_count = VertexTypeCount();
         for (int i=0; i<vertex_data_type_count; i++) {
             if (g.vertex_data_type_info[i].type_name == std::string(type)) {
@@ -448,7 +448,7 @@ struct MappedGraphImpl : public MappedGraph {
         return 0;
     }
 
-    eid_t EdgeOfTypeCount(const char* type) {
+    eid_t EdgeCountOfType(const char* type) {
         uint32_t edge_data_type_count = EdgeTypeCount();
         for (int i=0; i<edge_data_type_count; i++) {
             if (g.edge_data_type_info[i].type_name == std::string(type)) {
