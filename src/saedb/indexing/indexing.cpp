@@ -68,13 +68,13 @@ vector<string> split(string s, char c) {
 }
 
 bool isPunctuation(string s) {
-	if (ispunct(s[0]))
-		return true;
-	else if (s=="；"||s=="："||s=="“"||s=="”"||s=="‘"||s=="’"||s=="，"||s=="。"
-		||s=="《"||s=="》"||s=="？"||s=="、"||s=="·"||s=="！"||s=="…"||s=="（"||s=="）"
-		||s=="【"||s=="】")
-		return true;
-	return false;
+    if (ispunct(s[0]))
+        return true;
+    else if (s=="；"||s=="："||s=="“"||s=="”"||s=="‘"||s=="’"||s=="，"||s=="。"
+        ||s=="《"||s=="》"||s=="？"||s=="、"||s=="·"||s=="！"||s=="…"||s=="（"||s=="）"
+        ||s=="【"||s=="】")
+        return true;
+    return false;
 }
 
 void Index::addSingleCN(int doc, int field, const string& value, double avg_len, const std::set<string>& stopwords) {
@@ -93,11 +93,11 @@ void Index::addSingleCN(int doc, int field, const string& value, double avg_len,
         string term = words[i];
         auto stop = stopwords.find(term);
         if (stop == stopwords.end()) {
-			if (!isPunctuation(term)) {
-				cout << term << endl;
-	            int term_id = word_map.id(term);
-	            word_position[term_id].push_back(position++);
-			}
+            if (!isPunctuation(term)) {
+                cout << term << endl;
+                int term_id = word_map.id(term);
+                word_position[term_id].push_back(position++);
+            }
         }
     }
 
