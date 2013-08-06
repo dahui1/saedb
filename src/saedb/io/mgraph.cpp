@@ -129,7 +129,7 @@ struct VertexIteratorImpl : public VertexIterator {
 
     VertexIteratorImpl(GraphData& g, vid_t global_id):
         g(g), global_id(global_id) {}
-    
+
     vid_t GlobalId() {
         return global_id;
     }
@@ -138,16 +138,16 @@ struct VertexIteratorImpl : public VertexIterator {
         return g.vertex_list[global_id].local_id;
     }
 
-    uint32_t DataTypeId() {
+    uint32_t TypeId() {
         return g.vertex_list[global_id].data_type;
     }
 
-    std::string Typename() {
-        return g.vertex_data_type_info[DataTypeId()].type_name;
+    std::string TypeName() {
+        return g.vertex_data_type_info[TypeId()].type_name;
     }
 
     std::string& Data() {
-        return g.vertex_data[DataTypeId()][LocalId()];
+        return g.vertex_data[TypeId()][LocalId()];
     }
 
     void Next() {
@@ -155,11 +155,11 @@ struct VertexIteratorImpl : public VertexIterator {
     }
 
     void NextOfType() {
-        if (LocalId() == g.vertex_data_type_info[DataTypeId()].count - 1) {
+        if (LocalId() == g.vertex_data_type_info[TypeId()].count - 1) {
             MoveTo(g.meta->vertices);
             return;
         }
-        MoveTo(g.vertex_type_list[DataTypeId()][LocalId() + 1]);
+        MoveTo(g.vertex_type_list[TypeId()][LocalId() + 1]);
     }
 
     void MoveTo(vid_t id) {
@@ -234,12 +234,12 @@ struct EdgeIteratorImpl : public EdgeIterator {
         return list[base + index].target_id;
     }
     
-    uint32_t DataTypeId() {
+    uint32_t TypeId() {
         return list[base + index].data_type;
     }
 
-    std::string Typename() {
-        return g.edge_data_type_info[DataTypeId()].type_name;
+    std::string TypeName() {
+        return g.edge_data_type_info[TypeId()].type_name;
     }
 
     VertexIteratorPtr Source() {
@@ -253,7 +253,7 @@ struct EdgeIteratorImpl : public EdgeIterator {
     }
 
     std::string& Data() {
-        return g.edge_data[DataTypeId()][LocalId()];
+        return g.edge_data[TypeId()][LocalId()];
     }
 
     void Next() {
@@ -404,6 +404,24 @@ struct MappedGraphImpl : public MappedGraph {
         return mg;
     }
 
+    int VertexTypeIdOf(const char * type) {
+        for (int i = 0; i < g.meta->vertex_data_type_count; i++) {
+            if (g.vertex_data_type_info[i].type_name == type) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    int EdgeTypeIdOf(const char * type) {
+        for (int i = 0; i < g.meta->edge_data_type_count; i++) {
+            if (g.edge_data_type_info[i].type_name == type) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     vid_t VertexCount() {
         return g.meta->vertices;
     }
@@ -411,7 +429,7 @@ struct MappedGraphImpl : public MappedGraph {
     eid_t EdgeCount() {
         return g.meta->edges;
     }
-    
+
     uint32_t VertexTypeCount() {
         return g.meta->vertex_data_type_count;
     }
@@ -420,7 +438,7 @@ struct MappedGraphImpl : public MappedGraph {
         return g.meta->edge_data_type_count;
     }
 
-    vid_t VertexOfTypeCount(const char* type) {
+    vid_t VertexCountOfType(const char* type) {
         uint32_t vertex_data_type_count = VertexTypeCount();
         for (int i=0; i<vertex_data_type_count; i++) {
             if (g.vertex_data_type_info[i].type_name == std::string(type)) {
@@ -430,7 +448,7 @@ struct MappedGraphImpl : public MappedGraph {
         return 0;
     }
 
-    eid_t EdgeOfTypeCount(const char* type) {
+    eid_t EdgeCountOfType(const char* type) {
         uint32_t edge_data_type_count = EdgeTypeCount();
         for (int i=0; i<edge_data_type_count; i++) {
             if (g.edge_data_type_info[i].type_name == std::string(type)) {

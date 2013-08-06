@@ -4,14 +4,16 @@
 #include <vector>
 #include "indexing.hpp"
 
-using namespace std;
-
 namespace indexing {
 
 struct QueryItem {
     int docId;
     double score;
 };
+
+inline bool operator< (const QueryItem& left, const QueryItem& right) {
+    return left.score > right.score;
+}
 
 struct Query {
     virtual ~Query() = default;
@@ -40,7 +42,7 @@ private:
 };
 
 struct TermQuery : public Query {
-    TermQuery(const Index& index, int &term, int occur);
+    TermQuery(const Index& index, Term &term, int occur);
     virtual bool next(QueryItem& item);
 
 private:
@@ -64,6 +66,6 @@ struct StandardQueryAnalyzer : public QueryAnalyzer
 };
 
 // handy method for building the query tree
-std::unique_ptr<Query> buildQuery(const std::string& query, const Index& index);
+std::unique_ptr<Query> buildQuery(const std::string& query, const Index& index, const int type);
 
 } // namespace indexing

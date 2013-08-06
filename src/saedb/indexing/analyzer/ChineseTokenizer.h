@@ -1,35 +1,26 @@
 #pragma once
-#include<iostream>
-#include "Tokenizer.h"
-#include "TokenUtil.h"
+#include <iostream>
+#include "CharTokenizer.h"
+#include "Character.h"
 
 using std::string;
 
-class CharTokenizer :
+class ChineseTokenizer :
 	public Tokenizer
 {
 public:
-	CharTokenizer(void)
-		:	ioBuffer(NULL)
+	ChineseTokenizer(void)
 	{
-		init();
 	}
-
-	~CharTokenizer(void)
+	~ChineseTokenizer(void)
 	{
-		delete[] ioBuffer;
 	}
-
-	//string input;
-	CharTokenizer(string in)
-		:	Tokenizer(in),
-		 	ioBuffer(NULL)
-	{
-		init();
+	ChineseTokenizer(const string& in) {
+		offset = 0;
+		dataLen = input.length();
+		ioBuffer = TokenUtil::s2wchar(input);
 	}
-
-	virtual bool isTokenChar(wchar_t c)=0; //TODO
-
+	
 	bool next(Token& token)
 	{
 		int length = 0;
@@ -38,7 +29,7 @@ public:
 		while (cur_ptr!=end_ptr)
 		{
 			++offset;
-			if (isTokenChar(*cur_ptr))
+			if (*cur_ptr != ' ')
 			{
 				++length;
 			}
@@ -64,17 +55,8 @@ public:
 			return false;
 		}
 	}
-
 private:
 	int offset, dataLen;
 	wchar_t* ioBuffer;
-
-	void init()
-	{
-		offset = 0;
-		dataLen = input.length();
-		ioBuffer = TokenUtil::s2wchar(input);
-	}
-
 };
 

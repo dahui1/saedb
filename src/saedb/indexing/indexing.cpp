@@ -2,9 +2,6 @@
 #include "analyzer.hpp"
 #include "indexing.hpp"
 
-#define BM25_K 2.0
-#define BM25_B 0.75
-
 using namespace std;
 using namespace indexing;
 
@@ -19,7 +16,7 @@ int WordMap::id(const std::string word) {
     }
 }
 
-int WordMap::find_id(const std::string word) const {
+int WordMap::findId(const std::string word) const {
     auto wi = find(word);
     if (wi != end()) {
         return wi->second;
@@ -27,54 +24,92 @@ int WordMap::find_id(const std::string word) const {
     else return -1;
 }
 
+void Index::addSingle(int doc, int field, const string& value, double avg_len) {
+    unique_ptr<TokenStream> stream(ArnetAnalyzer::tokenStream(value));
+    unordered_map<int, vector<short>> word_position;
+    int position = 0;
+
+    Token token;
+    while (stream->next(token)) {
+        string term = token.getTermText();
+        int term_id = word_map.id(term);
+        word_position[term_id].push_back(position++);
+    }
+
+    int totalTokens = position;
+    for (auto& wp : word_position) {
+        int word = wp.first;
+        auto& positions = wp.second;
+        // insert a new posting item
+        Term term{word, field};
+        double score = bm25(positions.size(), totalTokens, avg_len);
+        (*this)[term].insert(PostingItem{doc, positions, score});
+    }
+}
+
+vector<string> split(string s, char c) {
+    int last = 0;
+    vector<string> v;
+    for (int i=0; i<s.size(); i++) {
+        if (s[i] == c) {
+            v.push_back(s.substr(last, i - last));
+            last = i + 1;
+        }
+    }
+    v.push_back(s.substr(last, s.size() - last));
+    return v;
+}
+
+void Index::addSingleCN(int doc, int field, const string& value, double avg_len, const std::set<string>& stopwords) {
+    unordered_map<int, vector<short>> word_position;
+    int position = 0;
+    auto words = split(value, ' ');
+    for (int i = 0; i < words.size(); i++ ) {
+        string term = words[i];
+        auto stop = stopwords.find(term);
+        if (stop == stopwords.end()) {
+            int term_id = word_map.id(term);
+            word_position[term_id].push_back(position++);
+        }
+    }
+
+    int totalTokens = position;
+    for (auto& wp : word_position) {
+        int word = wp.first;
+        auto& positions = wp.second;
+        // insert a new posting item
+        Term term{word, field};
+        double score = bm25(positions.size(), totalTokens, avg_len);
+        (*this)[term].insert(PostingItem{doc, positions, score});
+    }
+}
+
 Index Index::build(DocumentCollection docs) {
-	Index index;
-	int count = docs.size();
-	double avgLen = 0;
-	for (auto& doc : docs) {
-		for (auto& field : doc.second) {
-			string value = field.value;
-			for (unsigned i = 0; i < value.length(); i++)
-				if (value[i] == ' ' && i != value.length()-1)
-					avgLen++;
-			avgLen++;
-		}
-	}
-	avgLen = avgLen / (double)count;
+    Index index;
+    int count = docs.size();
+    double avgLen = 0;
+    for (auto& doc : docs) {
+        for (auto& field : doc.second) {
+            string value = field.value;
+            for (unsigned i = 0; i < value.length(); i++)
+                if (value[i] == ' ' && i != value.length()-1)
+                    avgLen++;
+            avgLen++;
+        }
+    }
+    avgLen = avgLen / (double)count;
 
-	for (auto& doc : docs) {
-		cout << doc.second.id << endl;
-		for (auto& field : doc.second) {
-			string& value = field.value;
-			unique_ptr<TokenStream> stream(ArnetAnalyzer::tokenStream(value));
-			unordered_map<int, vector<short int> > word_position;
-			int position = 0;
+    for (auto& doc : docs) {
+        for (auto& field : doc.second) {
+            index.addSingle(doc.second.id, 0, field.value, avgLen);
+        }
+    }
 
-			Token token;
-			while (stream->next(token)) {
-				string term = token.getTermText();
-				int term_id = index.word_map.id(term);
-				cout << term << endl;
-				word_position[term_id].push_back(position++);
-			}
-
-			int totalTokens = position;
-			for (auto& wp : word_position) {
-				int word_id = wp.first;
-				int field_id = 0; // TODO
-				auto& positions = wp.second;
-				int freq = static_cast<int>(positions.size());
-				double score = (freq * (BM25_K + 1)) / (freq + BM25_K * (1 - BM25_B + BM25_B * totalTokens / avgLen));
-				// insert a new posting item
-				index[word_id].insert(PostingItem{doc.second.id, positions, score});
-			}
-		}
-	}
-	index.optimize();
-	return std::move(index);
+    index.optimize();
+    return std::move(index);
 }
 
 void Index::optimize() {
-	// current nothing to do.
+    // currently nothing to do.
 }
 

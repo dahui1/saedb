@@ -37,7 +37,8 @@ namespace sae {
             virtual void NextOfType() = 0;
             virtual void MoveTo(vid_t) = 0;
             virtual bool Alive() = 0;
-            virtual std::string Typename() = 0;
+            virtual std::string TypeName() = 0;
+            virtual uint32_t TypeId() = 0;
             virtual eid_t InEdgeCount() = 0;
             virtual eid_t OutEdgeCount() = 0;
             virtual EdgeIteratorPtr InEdges() = 0;
@@ -56,7 +57,8 @@ namespace sae {
             virtual std::string& Data() = 0;
             virtual void Next() = 0;
             virtual bool Alive() = 0;
-            virtual std::string Typename() = 0;
+            virtual std::string TypeName() = 0;
+            virtual uint32_t TypeId() = 0;
             virtual eid_t Count() = 0;
             virtual EdgeIteratorPtr Clone() = 0;
             EdgeIterator(){}
@@ -71,20 +73,44 @@ namespace sae {
             static MappedGraph* Open(const char * prefix);
 
             /**
+             * Get the internal id of the vertex typename.
+             */
+            virtual int VertexTypeIdOf(const char* type) = 0;
+
+            /**
+             * Get the internal id of the edge typename.
+             */
+            virtual int EdgeTypeIdOf(const char* type) = 0;
+
+            /**
              * Count of vertices.
              */
             virtual vid_t VertexCount() = 0;
+
+            /**
+             * Count of vertices of the specific type.
+             */
+            virtual eid_t VertexCountOfType(const char* type) = 0;
 
             /**
              * Count of edges.
              */
             virtual eid_t EdgeCount() = 0;
 
+
+            /**
+             * Count of edges of the specific type.
+             */
+            virtual eid_t EdgeCountOfType(const char* type) = 0;
+
             /**
              * Obtain an iterator for vertices.
              */
             virtual VertexIteratorPtr Vertices() = 0;
 
+            /**
+             * Obtain an iterator for vertices of that type.
+             */
             virtual VertexIteratorPtr VerticesOfType(const char*) = 0;
 
             /**
@@ -98,8 +124,8 @@ namespace sae {
             virtual EdgeIteratorPtr BackwardEdges() = 0;
 
             /*
-                Obtain an iterator for edges.
-            */
+             *  Obtain an iterator for edges.
+             */
             virtual EdgeIteratorPtr Edges() = 0;
 
             /**

@@ -2,9 +2,9 @@
 #include <iostream>
 #include <thread>
 #include <unordered_map>
-#include <glog/logging.h>
-#include <zmq.hpp>
 
+#include "glog/logging.h"
+#include "zmq.hpp"
 #include "RpcServer.hpp"
 #include "rpc.pb.h"
 
@@ -41,6 +41,9 @@ namespace
         return true;
     }
 }
+
+namespace sae {
+namespace rpc {
 
 struct RpcServerImpl : RpcServer
 {
@@ -137,7 +140,7 @@ struct RpcServerImpl : RpcServer
         zmq::device(ZMQ_QUEUE, clients, workers);
     }
 
-    private:
+private:
     int port_, threads_;
     std::unordered_map<string, ServiceFunc> methods_;
 };
@@ -145,4 +148,8 @@ struct RpcServerImpl : RpcServer
 RpcServer* RpcServer::CreateServer(int port, int threads)
 {
     return new RpcServerImpl(port, threads);
+
 }
+
+} // namespace rpc
+} // namespace sae

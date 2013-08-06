@@ -1,9 +1,19 @@
+#ifndef OS_LINUX
+#include <Windows.h>
+#pragma comment(lib, "ICTCLAS50.lib")
+#endif
+
+#include <cstdlib>
+#include <cstring>
 #include <string>
 #include <memory>
 #include <vector>
 #include "analyzer.hpp"
 #include "indexing.hpp"
 #include "query.hpp"
+#include "ICTCLAS50.h"
+
+using namespace std;
 
 namespace indexing {
 
@@ -39,6 +49,7 @@ AndQuery::AndQuery(std::unique_ptr<Query> leftOp, std::unique_ptr<Query> rightOp
 // OrQuery
 
 bool OrQuery::next(QueryItem& item) {
+    // XXX what's this temp?
     QueryItem temp = item;
     if (!hasLeft) hasLeft = left->next(u);
     if (!hasRight) hasRight = right->next(v);
@@ -47,8 +58,8 @@ bool OrQuery::next(QueryItem& item) {
         if (hasRight) {
             if (u.docId == v.docId) {
                 item.docId = u.docId;
-                item.score = u.score * leftFactor + v.score * rightFactor;		
-		hasLeft = false;
+                item.score = u.score * leftFactor + v.score * rightFactor;
+                hasLeft = false;
                 hasRight = false;
             } else if (u.docId < v.docId) {
                 item = u;
@@ -79,15 +90,15 @@ OrQuery::OrQuery(std::unique_ptr<Query> leftOp, std::unique_ptr<Query> rightOp, 
 
 // TermQuery
 
-TermQuery::TermQuery(const Index& index, int &term, int occur) {
-	if (index.find(term) != index.end())
-	{
-		it = index.find(term)->second.begin();
-		end = index.find(term)->second.end();
-	}
-	else
-		it = end = index.begin()->second.end();
-	occurence = occur;
+TermQuery::TermQuery(const Index& index, Term &term, int occur) {
+    if (index.find(term) != index.end())
+    {
+        it = index.find(term)->second.begin();
+        end = index.find(term)->second.end();
+    }
+    else
+        it = end = index.begin()->second.end();
+    occurence = occur;
 }
 
 bool TermQuery::next(QueryItem& item) {
@@ -96,14 +107,13 @@ bool TermQuery::next(QueryItem& item) {
     item.score = it->score;
     //item.score = it->score * log10 ((double)((3 - occurence + 0.5) / (0.5 * (occurence + 0.5))));
     if (item.score < 0)
-    	item.score = 0.01;
+        item.score = 0.01;
     it++;
     return true;
 }
 
 
 // Query Analyzers
-
 std::unique_ptr<Query> StandardQueryAnalyzer::BuildOrQueryTree(std::vector<std::unique_ptr<Query>>& queries, int start, int end)
 {
     if (start > end)
@@ -148,39 +158,71 @@ std::unique_ptr<Query> StandardQueryAnalyzer::MergeWithAndQuery(std::unique_ptr<
 
 std::unique_ptr<Query> StandardQueryAnalyzer::TryCreateTermQuery(const std::string& term_string, const Index& index)
 {
-	int term_id = index.word_map.find_id(term_string);
-	if (term_id == -1) return NULL;
-	int occurence = index.find(term_id)->second.size();
-	std::unique_ptr<Query> p (new TermQuery(index, term_id, occurence));
-	return p;
+    int term_id = index.word_map.findId(term_string);
+    if (term_id == -1) return NULL;
+    int occurence = index.find(Term{term_id, 0})->second.size();
+    int field_id = 0;
+    Term term{term_id, field_id};
+    std::unique_ptr<Query> p (new TermQuery(index, term, occurence));
+    return p;
 }
 
-std::vector<std::unique_ptr<Query>> buildTermQueries(const std::string& query, const Index& index, StandardQueryAnalyzer& analyzer) {
-    std::unique_ptr<TokenStream> stream(ArnetAnalyzer::tokenStream(query));
-    Token token;
-    std::vector<std::unique_ptr<Query>> queries;
+vector<string> split(string s, char c) {
+    int last = 0;
+    vector<string> v;
+    for (int i=0; i<s.size(); i++) {
+        if (s[i] == c) {
+            v.push_back(s.substr(last, i - last));
+            last = i + 1;
+        }
+    }
+    v.push_back(s.substr(last, s.size() - last));
+    return v;
+}
 
-    // building AND query
-    queries.clear();
-    while (stream->next(token))
-    {
-        std::unique_ptr<Query> p = analyzer.TryCreateTermQuery(token.getTermText(), index);
-        if (p != NULL)
-            queries.push_back(std::move(p));
+std::vector<std::unique_ptr<Query>> buildTermQueries(const std::string& query, const Index& index, StandardQueryAnalyzer& analyzer, const int type) {
+    std::vector<std::unique_ptr<Query>> queries;
+    if (type == 0) {
+        std::unique_ptr<TokenStream> stream(ArnetAnalyzer::tokenStream(query));
+        Token token;
+        // building AND query
+        queries.clear();
+        while (stream->next(token))
+        {
+            std::unique_ptr<Query> p = analyzer.TryCreateTermQuery(token.getTermText(), index);
+            if (p != NULL)
+                queries.push_back(std::move(p));
+        }
+    }
+    else if (type == 1) {
+        ICTCLAS_SetPOSmap(2);
+        const char* sentence = query.c_str();
+        unsigned int nPaLen=strlen(sentence); 
+        char* sRst=0; 
+        sRst=(char *)malloc(nPaLen*6); 
+        int nRstLen=0;
+        nRstLen = ICTCLAS_ParagraphProcess(sentence,nPaLen,sRst,CODE_TYPE_UNKNOWN,0);
+        auto words = split(sRst, ' ');
+        for (int i = 0; i < words.size(); i++) {
+            std::unique_ptr<Query> p = analyzer.TryCreateTermQuery(words[i], index);
+            if (p != NULL)
+                queries.push_back(std::move(p));
+        }
+        free(sRst);
     }
     return queries;
 }
 
-std::unique_ptr<Query> buildQuery(const std::string& query, const Index& index) {
+std::unique_ptr<Query> buildQuery(const std::string& query, const Index& index, const int type) {
     StandardQueryAnalyzer analyzer;
     std::vector<std::unique_ptr<Query>> queries;
 
     // building AND query
-    queries = buildTermQueries(query, index, analyzer);
+    queries = buildTermQueries(query, index, analyzer, type);
     std::unique_ptr<Query> andQueryTree = analyzer.BuildAndQueryTree(queries, 0, queries.size() - 1);
 
     // building OR query
-    queries = buildTermQueries(query, index, analyzer);
+    queries = buildTermQueries(query, index, analyzer, type);
     std::unique_ptr<Query> orQueryTree = analyzer.BuildOrQueryTree(queries, 0, queries.size() - 1);
 
     // composing the two queries

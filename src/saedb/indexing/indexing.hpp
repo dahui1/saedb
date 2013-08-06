@@ -6,42 +6,45 @@
 #include <set>
 #include <unordered_map>
 
-#define PUB_TOPIC_UNINIT -2
-
-using namespace std;
-
 namespace indexing {
 
-	struct Term {
-		int word;
-		int field;
-		bool operator==(const indexing::Term x) const
-		{
-			return (word == x.word) && (field == x.field);
-		}
-	};
+struct Term {
+    int word;
+    int field;
+
+    inline bool operator==(Term const &another) const
+    {
+        return (word == another.word) && (field == another.field);
+    }
+};
+
 }
 
 namespace std {
-    template <>
-	struct hash<indexing::Term> {
-		size_t operator()(const indexing::Term x) const {
-            return std::hash<int>()(x.word) ^ std::hash<int>()(x.field);
-        }
-    };
+
+template <>
+struct hash<indexing::Term> {
+    size_t operator()(const indexing::Term term) const {
+        return std::hash<int>()(term.word) ^ std::hash<int>()(term.field);
+    }
+};
+
 }
 
 namespace indexing {
 
+const float BM25_K = 2.0;
+const float BM25_B = 0.75;
+
 struct PostingItem {
-    long unsigned int docId;
+    int docId;
     std::vector<short> positions;
     double score;
 
-	bool operator<(const indexing::PostingItem x) const
-	{
-		return docId < x.docId;
-	}
+    bool operator<(const indexing::PostingItem& x) const
+    {
+        return docId < x.docId;
+    }
 
 };
 
@@ -62,18 +65,24 @@ struct DocumentCollection : public std::map<int, Document> {
 
 struct WordMap : public std::unordered_map<std::string, int> {
     int id(const std::string word);
-    int find_id(const std::string word) const;
+    int findId(const std::string word) const;
 };
 
-struct Index : public std::unordered_map<int, PostingList> {
+struct Index : public std::unordered_map<Term, PostingList> {
     WordMap word_map;
-    WordMap map;
-    
-	// optimize the index
+
+    // add single field
+    void addSingle(int doc, int field, const std::string& value, double score);
+    void addSingleCN(int doc, int field, const std::string& value, double aveLen, const std::set<std::string>& stopwords); 
+
+    // optimize the index
     void optimize();
 
     static Index build(DocumentCollection);
 };
 
+inline double bm25(int freq, int total_tokens, double avg_len) {
+    return (freq * (BM25_K + 1)) / (freq + BM25_K * (1 - BM25_B + BM25_B * total_tokens / avg_len));
+}
 
 } // namespace indexing
