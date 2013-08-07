@@ -1,4 +1,5 @@
 #include <chrono>
+#include <exception>
 #include <iostream>
 #include <thread>
 #include <unordered_map>
@@ -106,13 +107,15 @@ struct RpcServerImpl : RpcServer
                 } else {
                     ServiceFunc func = mit->second;
                     auto t1 = high_resolution_clock::now();
-                    success = func(request.param(), response_message);
+                    success = false;
+                    std::string exception_str;
+                    try {
+                        success = func(request.param(), response_message);
+                    } catch (std::exception& e) {
+                        exception_str = e.what();
+                    }
                     auto t2 = high_resolution_clock::now();
                     auto time_span = duration_cast<duration<double>>(t2 - t1);
-                    if (!success) {
-                        LOG(ERROR) << "E: " << request.method();
-                        continue;
-                    }
 
                     // create response
                     zrpc::Response response;
@@ -126,7 +129,12 @@ struct RpcServerImpl : RpcServer
                     // let the message fly
                     size_t reply_size = reply.size();
                     socket.send(reply);
-                    DLOG(INFO) << "M: " << request.method() << ", reply size: " << reply_size << ", duration: " << time_span.count();
+
+                    if (success) {
+                        DLOG(INFO) << "M: " << request.method() << ", reply size: " << reply_size << ", duration: " << time_span.count();
+                    } else {
+                        LOG(ERROR) << "E: " << request.method() << ", e.what(): " << exception_str;
+                    }
                 }
             }
         };
