@@ -1,8 +1,3 @@
-#ifndef OS_LINUX
-#include <Windows.h>
-#pragma comment(lib, "ICTCLAS50.lib")
-#endif
-
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -11,7 +6,6 @@
 #include "analyzer.hpp"
 #include "indexing.hpp"
 #include "query.hpp"
-#include "ICTCLAS50.h"
 
 using namespace std;
 
@@ -180,49 +174,30 @@ vector<string> split(string s, char c) {
     return v;
 }
 
-std::vector<std::unique_ptr<Query>> buildTermQueries(const std::string& query, const Index& index, StandardQueryAnalyzer& analyzer, const int type) {
+std::vector<std::unique_ptr<Query>> buildTermQueries(const std::unique_ptr<TokenStream>& stream, const Index& index, StandardQueryAnalyzer& analyzer) {
     std::vector<std::unique_ptr<Query>> queries;
-    if (type == 0) {
-        std::unique_ptr<TokenStream> stream(ArnetAnalyzer::tokenStream(query));
-        Token token;
-        // building AND query
-        queries.clear();
-        while (stream->next(token))
-        {
-            std::unique_ptr<Query> p = analyzer.TryCreateTermQuery(token.getTermText(), index);
-            if (p != NULL)
-                queries.push_back(std::move(p));
-        }
-    }
-    else if (type == 1) {
-        ICTCLAS_SetPOSmap(2);
-        const char* sentence = query.c_str();
-        unsigned int nPaLen=strlen(sentence); 
-        char* sRst=0; 
-        sRst=(char *)malloc(nPaLen*6); 
-        int nRstLen=0;
-        nRstLen = ICTCLAS_ParagraphProcess(sentence,nPaLen,sRst,CODE_TYPE_UNKNOWN,0);
-        auto words = split(sRst, ' ');
-        for (int i = 0; i < words.size(); i++) {
-            std::unique_ptr<Query> p = analyzer.TryCreateTermQuery(words[i], index);
-            if (p != NULL)
-                queries.push_back(std::move(p));
-        }
-        free(sRst);
+    Token token;
+    // building AND query
+    queries.clear();
+    while (stream->next(token))
+    {
+        std::unique_ptr<Query> p = analyzer.TryCreateTermQuery(token.getTermText(), index);
+        if (p != NULL)
+            queries.push_back(std::move(p));
     }
     return queries;
 }
 
-std::unique_ptr<Query> buildQuery(const std::string& query, const Index& index, const int type) {
+std::unique_ptr<Query> buildQuery(const std::unique_ptr<TokenStream>& stream, const Index& index) {
     StandardQueryAnalyzer analyzer;
     std::vector<std::unique_ptr<Query>> queries;
 
     // building AND query
-    queries = buildTermQueries(query, index, analyzer, type);
+    queries = buildTermQueries(stream, index, analyzer);
     std::unique_ptr<Query> andQueryTree = analyzer.BuildAndQueryTree(queries, 0, queries.size() - 1);
 
     // building OR query
-    queries = buildTermQueries(query, index, analyzer, type);
+    queries = buildTermQueries(stream, index, analyzer);
     std::unique_ptr<Query> orQueryTree = analyzer.BuildOrQueryTree(queries, 0, queries.size() - 1);
 
     // composing the two queries

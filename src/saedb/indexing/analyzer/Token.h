@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include "TokenUtil.h"
+#include "utils.hpp"
+
 using std::string;
 
 class Token
@@ -15,24 +17,24 @@ public:
 	{
 	}
 
-	void setTermText(const wchar_t* s, int start, int length)
+	void setTermText(const char* s, int start, int length)
 	{
-		text.assign(s+start, length);
+		text.assign(s, start, length);
 	}
 
-	void setTermText(const wstring& s)
+	void setTermText(const string& s)
 	{
 		text.assign(s);
 	}
 
-	wstring& getWsTermText()
+	string& getWsTermText()
 	{
 		return text;
 	}
 
 	string getTermText()
-	{
-		return TokenUtil::ws2s(text);
+        {
+		return text;
 	}
 
 	void setStartOffset(int st)
@@ -46,7 +48,7 @@ public:
 	}
 
 private:
-	wstring text;
+	string text;
 	int startOffset, endOffset;
 };
 

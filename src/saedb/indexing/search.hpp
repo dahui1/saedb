@@ -12,11 +12,11 @@ struct SearchResult : public std::vector<QueryItem> {
 struct Searcher {
     Searcher(const Index& index) : index(index) {
     }
-    
-    //type = 0: English; type = 1: Chinese
-    SearchResult search(const std::string& query, const int type) {
+	
+	//type = 0: English; type = 1: Chinese
+    SearchResult search(const std::unique_ptr<TokenStream>& stream) {
         SearchResult result;
-        auto q = buildQuery(query, index, type);
+        auto q = buildQuery(stream, index);
         if (q) {
             QueryItem item;
             while (q->next(item)) {

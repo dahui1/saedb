@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include "indexing.hpp"
+#include "analyzer.hpp"
 
 namespace indexing {
 
@@ -66,6 +67,6 @@ struct StandardQueryAnalyzer : public QueryAnalyzer
 };
 
 // handy method for building the query tree
-std::unique_ptr<Query> buildQuery(const std::string& query, const Index& index, const int type);
+std::unique_ptr<Query> buildQuery(const std::unique_ptr<TokenStream>& stream, const Index& index);
 
 } // namespace indexing

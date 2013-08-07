@@ -23,7 +23,7 @@ public:
 protected:
 	/** Collects only characters which satisfy
 		* {@link Character#isLetter(char)}.*/
-	bool isTokenChar(wchar_t c) {
+	bool isTokenChar(char c) {
 		//return char::IsLetter(c); //TODO...
 		/*if (((c>='A')&&(c<='Z')) || ((c>='a')&&(c<='z'))) 
 			return true; 

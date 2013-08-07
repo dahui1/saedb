@@ -14,6 +14,6 @@ public:
 	bool next(Token&);
 
 private:
-	static unordered_set<wstring> stopTokens;
+	static unordered_set<string> stopTokens;
 };
 

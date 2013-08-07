@@ -17,7 +17,7 @@ public:
   /** Collects only characters which satisfy
    * {@link Character#isLetter(char)}.*/
 //protected:
-	wchar_t normalize(wchar_t c) {
+	char normalize(char c) {
 		cout<<"normalize in LowerCaseToken..."<<endl;
 		return Character::toLowerCase(c);
 	}

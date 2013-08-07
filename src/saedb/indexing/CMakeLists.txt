@@ -12,13 +12,15 @@ file (GLOB INDEXING_SOURCES
     "search.hpp"
     )
 
-add_definitions(-DOS_LINUX)
-#add_library(ICTCLAS50 SHARED IMPORTED )
 add_library(indexing ${INDEXING_SOURCES})
-target_link_libraries(indexing ArnetAnalyzer ${SAE_SOURCE_DIR}/src/saedb/indexing/libICTCLAS50.a)
+target_link_libraries(indexing ArnetAnalyzer)
 
 add_executable(indexing_test indexing_test.cpp)
 target_link_libraries(indexing_test indexing sae_test)
+
+file (GLOB stream_test_SOURCES "test.cpp")
+add_executable(stream_test ${stream_test_SOURCES})
+target_link_libraries(stream_test ArnetAnalyzer)
 
 add_test(NAME indexing_test COMMAND indexing_test)
 
