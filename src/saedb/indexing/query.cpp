@@ -188,16 +188,16 @@ std::vector<std::unique_ptr<Query>> buildTermQueries(const std::unique_ptr<Token
     return queries;
 }
 
-std::unique_ptr<Query> buildQuery(const std::unique_ptr<TokenStream>& stream, const Index& index) {
+std::unique_ptr<Query> buildQuery(const std::unique_ptr<TokenStream>& stream1, const std::unique_ptr<TokenStream>& stream2, const Index& index) {
     StandardQueryAnalyzer analyzer;
     std::vector<std::unique_ptr<Query>> queries;
 
     // building AND query
-    queries = buildTermQueries(stream, index, analyzer);
+    queries = buildTermQueries(stream1, index, analyzer);
     std::unique_ptr<Query> andQueryTree = analyzer.BuildAndQueryTree(queries, 0, queries.size() - 1);
 
     // building OR query
-    queries = buildTermQueries(stream, index, analyzer);
+    queries = buildTermQueries(stream2, index, analyzer);
     std::unique_ptr<Query> orQueryTree = analyzer.BuildOrQueryTree(queries, 0, queries.size() - 1);
 
     // composing the two queries

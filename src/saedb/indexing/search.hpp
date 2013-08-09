@@ -13,9 +13,9 @@ struct Searcher {
     Searcher(const Index& index) : index(index) {
     }
 	
-    SearchResult search(const std::unique_ptr<TokenStream>& stream) {
+    SearchResult search(const std::unique_ptr<TokenStream>& stream1, const std::unique_ptr<TokenStream>& stream2) {
         SearchResult result;
-        auto q = buildQuery(stream, index);
+        auto q = buildQuery(stream1, stream2, index);
         if (q) {
             QueryItem item;
             while (q->next(item)) {

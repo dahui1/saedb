@@ -67,6 +67,6 @@ struct StandardQueryAnalyzer : public QueryAnalyzer
 };
 
 // handy method for building the query tree
-std::unique_ptr<Query> buildQuery(const std::unique_ptr<TokenStream>& stream, const Index& index);
+std::unique_ptr<Query> buildQuery(const std::unique_ptr<TokenStream>& stream1, const std::unique_ptr<TokenStream>& stream2, const Index& index);
 
 } // namespace indexing

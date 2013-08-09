@@ -33,10 +33,5 @@ public:
         return le;
     }
 
-    static TokenStream* tokenStream(const string& input, const int type)
-    {
-        TokenStream* le = new ChineseTokenizer(input);
-        return le;
-    }
 };
 
