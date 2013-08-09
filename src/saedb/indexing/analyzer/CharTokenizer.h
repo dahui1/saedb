@@ -19,7 +19,6 @@ public:
     {
         //delete[] ioBuffer;
     }
-
     //string input;
     CharTokenizer(string in)
         :    Tokenizer(in),

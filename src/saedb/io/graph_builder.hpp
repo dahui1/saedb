@@ -85,7 +85,7 @@ namespace io {
                 }
             }
             if (data_type_rank == -1) {
-                std::cout << "ERROR: type " << data_type_name << " is undefined." << std::endl;
+                std::cerr << "ERROR: type " << data_type_name << " is undefined." << std::endl;
                 return;
             }
             auto id = map(key);
@@ -106,15 +106,25 @@ namespace io {
                 }
             }
             if (data_type_rank == -1) {
-                std::cout << "ERROR: type " << data_type_name << " is undefined." << std::endl;
+                std::cerr << "ERROR: type " << data_type_name << " is undefined." << std::endl;
                 return;
             }
+
+            if (vid_map.count(source) == 0) {
+                std::cerr << "ERROR: adding edge <" << source << ", " << target << ">, source vertex not found! Edge not added." << std::endl;
+                return;
+            }
+            if (vid_map.count(target) == 0) {
+                std::cerr << "ERROR: adding edge <" << source << ", " << target << ">, target vertex not found! Edge not added." << std::endl;
+                return;
+            }
+
             auto sid = map(source);
             auto tid = map(target);
-            
+
             eid_t id = edges.size();
             auto local_id = edge_data_types[data_type_rank].count ++;
-            
+
             std::string code = sae::serialization::convert_to_string(data);
 
             edges.push_back(edge_with_data(sid, tid, id, local_id, code, data_type_rank));

@@ -4,7 +4,6 @@ project (indexing)
 
 file (GLOB INDEXING_SOURCES
     "analyzer.hpp"
-    "ICTCLAS50.h"
     "indexing.hpp"
     "indexing.cpp"
     "query.hpp"

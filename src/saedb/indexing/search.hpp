@@ -13,7 +13,6 @@ struct Searcher {
     Searcher(const Index& index) : index(index) {
     }
 	
-	//type = 0: English; type = 1: Chinese
     SearchResult search(const std::unique_ptr<TokenStream>& stream) {
         SearchResult result;
         auto q = buildQuery(stream, index);
