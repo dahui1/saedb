@@ -131,7 +131,7 @@ struct RpcServerImpl : RpcServer
                     socket.send(reply);
 
                     if (success) {
-                        DLOG(INFO) << "M: " << request.method() << ", reply size: " << reply_size << ", duration: " << time_span.count();
+                        LOG(INFO) << "M: " << request.method() << ", reply size: " << reply_size << ", duration: " << time_span.count();
                     } else {
                         LOG(ERROR) << "E: " << request.method() << ", e.what(): " << exception_str;
                     }
