@@ -74,12 +74,8 @@ struct Index : public std::unordered_map<Term, PostingList> {
     WordMap word_map;
 
     // add single field
-<<<<<<< HEAD
     void addSingle(int doc, int field, const std::unique_ptr<TokenStream>& stream, double score);
     //void addSingleCN(int doc, int field, const std::string& value, double aveLen, const std::set<std::string>& stopwords); 
-=======
-    void addSingle(int doc, int field, const std::string& value, double score);
->>>>>>> thinxer/demo
 
     // optimize the index
     void optimize();
