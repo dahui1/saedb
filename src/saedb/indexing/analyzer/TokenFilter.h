@@ -23,5 +23,9 @@ public:
 		return input->next(token);
 	}
 	
+	void reset() {
+            input->reset();
+        }
+	
 };
 

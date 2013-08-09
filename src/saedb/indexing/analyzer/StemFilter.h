@@ -7,12 +7,12 @@
 using std::unordered_map;
 
 class StemFilter :
-	public TokenFilter
+    public TokenFilter
 {
 public:
-	StemFilter(TokenStream* in);
-	bool next(Token& token);
+    StemFilter(TokenStream* in);
+    bool next(Token& token);
 private:
-	stemming::english_stem<> StemEnglish;
+    stemming::english_stem<> StemEnglish;
 };
 

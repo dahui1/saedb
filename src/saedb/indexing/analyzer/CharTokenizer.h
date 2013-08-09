@@ -63,6 +63,10 @@ public:
             return false;
         }
     }
+    
+    void reset(){
+        offset = 0;
+    }; 
 
 private:
     int offset, dataLen;
@@ -74,6 +78,5 @@ private:
         dataLen = input.length();
         ioBuffer = input.c_str();
     }
-
 };
 

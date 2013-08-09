@@ -38,6 +38,6 @@ public:
    *  once, it is neccessary to implement reset(). 
    */
 	//virtual void reset(){}; 
-	void reset(){}; 
+	virtual void reset(){}; 
 };
 

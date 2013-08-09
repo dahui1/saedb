@@ -32,6 +32,5 @@ public:
         TokenStream* le = new ChineseTokenizer(input, stopwords);
         return le;
     }
-
 };
 

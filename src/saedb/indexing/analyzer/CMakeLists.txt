@@ -1,6 +1,5 @@
 file(GLOB ArnetAnalyzer_SOURCES
     "*.h"
-    "*.hpp"
     "*.cpp"
     )
 

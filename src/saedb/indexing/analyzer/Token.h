@@ -33,7 +33,7 @@ public:
 	}
 
 	string getTermText()
-        {
+	{
 		return text;
 	}
 

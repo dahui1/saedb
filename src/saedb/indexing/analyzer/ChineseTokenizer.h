@@ -41,7 +41,7 @@ public:
     }
 
     string filter(string s, const std::set<string>& stopwords) {
-	    auto words = split(s, ' ');
+        auto words = split(s, ' ');
         string result = "";
         for (int i = 0; i < words.size(); i++) {
             string term = words[i];
@@ -105,6 +105,11 @@ public:
             return false;
         }
     }
+    
+    void reset(){
+        offset = 0;
+    }; 
+    
 private:
 
     int offset, dataLen;
