@@ -1,6 +1,8 @@
 #pragma once
 
 #include "sae_include.hpp"
+#include <iostream>
+using namespace std;
 
 double RESET_PROB = 0.15;
 double TOLERANCE = 1.0E-2;
@@ -25,6 +27,7 @@ public saedb::IAlgorithm<graph_type, double, message_data_type>
 public:
     void init(icontext_type& context, vertex_type& vertex, const message_type& msg) {
         //vertex.data() = msg;
+		//cout<<vertex.id()<<endl;
     }
 
     edge_dir_type gather_edges(icontext_type& context,
@@ -45,12 +48,12 @@ public:
 
     edge_dir_type scatter_edges(icontext_type& context,
                                 const vertex_type& vertex) const{
-        return saedb::OUT_EDGES;
+        return saedb::NO_EDGES;
     }
 
     void scatter(icontext_type& context, const vertex_type& vertex,
                  edge_type& edge) const {
-        context.signal(edge.target());
+        //context.signal(edge.target());
     }
 
 };

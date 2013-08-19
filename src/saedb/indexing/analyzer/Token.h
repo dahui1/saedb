@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include "TokenUtil.h"
-#include "utils.hpp"
 
 using std::string;
 

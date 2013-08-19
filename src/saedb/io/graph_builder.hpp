@@ -154,6 +154,7 @@ namespace io {
 
                 GraphWriter* writer = CreateMemoryMappedGraphWriter(prefix, vertices.size(), edges.size(), vertex_data_types.size(), edge_data_types.size(), vertex_type_count, edge_type_count);
 
+                printf("here\n");
                 if (!writer) return false;
                 for (auto data_type: vertex_data_types) {
                     writer->AppendVertexDataType(data_type.type_name, data_type.count);
