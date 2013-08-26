@@ -1,8 +1,10 @@
 project(networks)
 
-file(GLOB PAGERANK_TEST_SOURCES "*.hpp" "*.cpp")
+file(GLOB networks_SOURCES
+    "networks.hpp"
+    "runNetworks.cpp"
+)
 
-add_executable(networks_test ${PAGERANK_TEST_SOURCES})
-target_link_libraries(networks_test saedb sae_test)
+add_library(networks ${networks_SOURCES})
+target_link_libraries(networks saedb sae_test)
 
-add_test(NAME networks COMMAND networks_test)

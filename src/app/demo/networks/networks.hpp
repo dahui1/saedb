@@ -5,10 +5,13 @@
 #include <vector>
 #include <iomanip>
 #include <algorithm>
+#include "../HIS/HIS.hpp"
 using namespace std;
 
-double RESET_PROB = 0.15;
-double TOLERANCE = 1.0E-2;
+namespace Networks {
+
+const double RESET_PROB = 0.15;
+const double TOLERANCE = 1.0E-2;
 const double MAX_DOUBLE = 1.0E100;
 const double MIN_DOUBLE = -1.0E100;
 
@@ -19,9 +22,11 @@ typedef float message_data_type;
 struct VData {
 	int index;
     double val;
+	int community;
+	int degree;
 	bool operator < (const VData& a) const 
 	{
-		return val > a.val;
+		return val < a.val;
 	}
 };
 
@@ -107,3 +112,7 @@ public:
     }
 
 };
+
+}
+
+vector<his::Outdata> runNetworks(string& path);
